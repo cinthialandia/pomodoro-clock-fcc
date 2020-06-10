@@ -10,14 +10,25 @@ import "./App.css";
 
 type TimerStates = "Session" | "Break";
 
+interface TimeLeft {
+  seconds: string;
+  minutes: string;
+}
+
 function App() {
-  const [breakMinutes, setBreakMinutes] = useState(0.1);
-  const [sessionMinutes, setSessionMinutes] = useState(0.1);
+  const [breakMinutes, setBreakMinutes] = useState(5);
+  const [sessionMinutes, setSessionMinutes] = useState(25);
   const [breakMilliseconds, setBreakMilliseconds] = useState(0);
   const [sessionMilliseconds, setSessionMilliseconds] = useState(0);
   const [activeTimer, setActiveTimer] = useState<TimerStates>("Session");
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>({
+    seconds: "00",
+    minutes: "00",
+  });
   const audioRef = useRef<HTMLAudioElement>(null);
   const timer = useMemo(() => new Timer(), []);
+  // a force render hack :)
+  const [_, forceRender] = useState([]);
 
   const convertMinutestoMilliseconds = (minutes: number) => {
     // adding 1 second to "show the 00:00"
@@ -40,7 +51,11 @@ function App() {
     const minutes = Math.floor(ms / timeAPI.MINUTES);
     ms %= timeAPI.MINUTES;
     // substracting 1 to show the "00:00"
-    const seconds = Math.round(ms / timeAPI.SECONDS) - 1;
+    let seconds = Math.round(ms / timeAPI.SECONDS);
+
+    if (seconds > 0) {
+      seconds = seconds - 1;
+    }
 
     console.log({ minutes, seconds });
 
@@ -114,6 +129,7 @@ function App() {
 
   const handlePause = () => {
     timer.pause();
+    forceRender([]);
   };
 
   const handleRewind = () => {
@@ -127,6 +143,7 @@ function App() {
     setBreakMinutes(5);
     setBreakMilliseconds(convertMinutestoMilliseconds(5));
     setSessionMilliseconds(convertMinutestoMilliseconds(25));
+    setTimeLeft(convertMillisecondsToTime(convertMinutestoMilliseconds(25)));
   };
 
   const handleDone = useCallback(() => {
@@ -150,7 +167,9 @@ function App() {
 
   const handleTick = useCallback(
     (ms: number) => {
-      if (ms > 0 && ms < 1000) {
+      const timeLeft = convertMillisecondsToTime(ms);
+
+      if (timeLeft.minutes === "00" && timeLeft.seconds === "00") {
         audioRef.current?.play();
       }
 
@@ -159,17 +178,28 @@ function App() {
       } else {
         setBreakMilliseconds(ms);
       }
+      setTimeLeft(timeLeft);
     },
     [activeTimer]
   );
 
   useEffect(() => {
-    setSessionMilliseconds(convertMinutestoMilliseconds(sessionMinutes));
-  }, [sessionMinutes]);
+    const timeInMs = convertMinutestoMilliseconds(sessionMinutes);
+    setSessionMilliseconds(timeInMs);
+
+    if (activeTimer === "Session") {
+      setTimeLeft(convertMillisecondsToTime(timeInMs));
+    }
+  }, [activeTimer, sessionMinutes]);
 
   useEffect(() => {
-    setBreakMilliseconds(convertMinutestoMilliseconds(breakMinutes));
-  }, [breakMinutes]);
+    const timeInMs = convertMinutestoMilliseconds(breakMinutes);
+    setBreakMilliseconds(timeInMs);
+
+    if (activeTimer === "Break") {
+      setTimeLeft(convertMillisecondsToTime(timeInMs));
+    }
+  }, [activeTimer, breakMinutes]);
 
   useEffect(() => {
     timer.on("tick", handleTick);
@@ -181,35 +211,48 @@ function App() {
     };
   }, [timer, handleTick, handleDone]);
 
-  const { minutes, seconds } = convertMillisecondsToTime(
-    activeTimer === "Session" ? sessionMilliseconds : breakMilliseconds
-  );
-
   return (
     <div className="App">
       <h1>Pomodoro Clock</h1>
       <div className="container-break-session">
         <div className="container-break">
-          <div>Break Length</div>
-          <button onClick={handleBreakLessClick}>-</button>
-          <div>{breakMinutes}</div>
-          <button onClick={handleBreakAddClick}>+</button>
+          <div id="break-label">Break Length</div>
+          <button id="break-decrement" onClick={handleBreakLessClick}>
+            -
+          </button>
+          <div id="break-length">{breakMinutes}</div>
+          <button id="break-increment" onClick={handleBreakAddClick}>
+            +
+          </button>
         </div>
         <div className="container-session">
-          <div>Session Length</div>
-          <button onClick={handleSessionLessClick}>-</button>
-          <div>{sessionMinutes}</div>
-          <button onClick={handleSessionAddClick}>+</button>
+          <div id="session-label">Session Length</div>
+          <button id="session-decrement" onClick={handleSessionLessClick}>
+            -
+          </button>
+          <div id="session-length">{sessionMinutes}</div>
+          <button id="session-increment" onClick={handleSessionAddClick}>
+            +
+          </button>
         </div>
       </div>
       <div className="session-screen">
-        <div>{activeTimer}</div>
-        <p>
-          {minutes}:{seconds}
+        <div id="timer-label">{activeTimer}</div>
+        <p id="time-left">
+          {timeLeft.minutes}:{timeLeft.seconds}
         </p>
-        <button onClick={handlePlay}>play</button>
-        <button onClick={handlePause}>pause</button>
-        <button onClick={handleRewind}>rewinde</button>
+        {timer.status === "running" ? (
+          <button id="start_stop" onClick={handlePause}>
+            pause
+          </button>
+        ) : (
+          <button id="start_stop" onClick={handlePlay}>
+            play
+          </button>
+        )}
+        <button id="reset" onClick={handleRewind}>
+          rewinde
+        </button>
         <audio ref={audioRef} id="beep" src="/sound/beep.wav"></audio>
       </div>
     </div>
