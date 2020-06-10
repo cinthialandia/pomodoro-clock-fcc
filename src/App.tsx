@@ -1,47 +1,143 @@
-import React, { useState } from "react";
-
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import Timer from "tiny-timer";
 import "./App.css";
 
 function App() {
-  const [numberBreakLength, setNumberBreakLength] = useState(5);
-  const [numberSessionLength, setNumberSessionLength] = useState(25);
+  const [breakMinutes, setBreakMinutes] = useState(0.1);
+  const [sessionMinutes, setSessionMinutes] = useState(0.2);
+  const [breakMilliseconds, setBreakMilliseconds] = useState(0);
+  const [sessionMilliseconds, setSessionMilliseconds] = useState(0);
+  const [activeTimer, setActiveTimer] = useState<"session" | "break">(
+    "session"
+  );
+  const timer = useMemo(() => new Timer(), []);
 
-  const handleClickLess = (e: any) => {
-    let updateNumberBreak = numberBreakLength;
+  const convertMinutestoMilliseconds = (minutes: number) => {
+    return Math.floor(minutes * 60 * 1000);
+  };
 
-    if (numberBreakLength > 1) {
+  const convertMillisecondsToTime = (ms: number) => {
+    const timeAPI = {
+      MINUTES: 1000 * 60,
+      SECONDS: 1000,
+    };
+
+    if (ms <= 0) {
+      return {
+        minutes: `00`,
+        seconds: `00`,
+      };
+    }
+
+    const minutes = Math.round(ms / timeAPI.MINUTES);
+    ms %= timeAPI.MINUTES;
+    const seconds = Math.round(ms / timeAPI.SECONDS);
+
+    console.log({ minutes, seconds });
+
+    return {
+      minutes: minutes.toString(),
+      seconds: seconds.toString(),
+    };
+  };
+
+  const handleBreakLessClick = (e: any) => {
+    let updateNumberBreak = breakMinutes;
+
+    if (breakMinutes > 1) {
       updateNumberBreak -= 1;
     }
-    setNumberBreakLength(updateNumberBreak);
+
+    setBreakMinutes(updateNumberBreak);
   };
 
-  const handleClickAdd = (e: any) => {
-    let updateNumber = numberBreakLength;
+  const handleBreakAddClick = (e: any) => {
+    let updateNumber = breakMinutes;
 
-    if (numberBreakLength < 60) {
+    if (breakMinutes < 60) {
       updateNumber += 1;
     }
-    setNumberBreakLength(updateNumber);
+
+    setBreakMinutes(updateNumber);
   };
 
-  const handleClickLessLength = (e: any) => {
-    console.log(e);
-    let updateNumberSession = numberSessionLength;
+  const handleSessionLessClick = (e: any) => {
+    let updateNumberSession = sessionMinutes;
 
     if (updateNumberSession > 1) {
       updateNumberSession -= 1;
     }
-    setNumberSessionLength(updateNumberSession);
+    setSessionMinutes(updateNumberSession);
   };
 
-  const handleClickAddLength = (e: any) => {
-    let updateNumberSession = numberSessionLength;
+  const handleSessionAddClick = (e: any) => {
+    let updateNumberSession = sessionMinutes;
 
     if (updateNumberSession < 60) {
       updateNumberSession += 1;
     }
-    setNumberSessionLength(updateNumberSession);
+
+    setSessionMinutes(updateNumberSession);
   };
+
+  const handlePlay = () => {
+    const timeInMilli =
+      activeTimer === "session" ? sessionMilliseconds : breakMilliseconds;
+
+    timer.start(timeInMilli);
+  };
+
+  const handleDone = useCallback(() => {
+    if (activeTimer === "session") {
+      setActiveTimer("break");
+      timer.start(breakMilliseconds);
+      setSessionMilliseconds(convertMinutestoMilliseconds(sessionMinutes));
+    } else {
+      setActiveTimer("session");
+      timer.start(sessionMilliseconds);
+      setBreakMilliseconds(convertMinutestoMilliseconds(breakMinutes));
+    }
+  }, [
+    activeTimer,
+    breakMilliseconds,
+    breakMinutes,
+    sessionMilliseconds,
+    sessionMinutes,
+    timer,
+  ]);
+
+  const handleTick = useCallback(
+    (ms: number) => {
+      if (activeTimer === "session") {
+        setSessionMilliseconds(ms);
+      } else {
+        setBreakMilliseconds(ms);
+      }
+    },
+    [activeTimer]
+  );
+
+  useEffect(() => {
+    setSessionMilliseconds(convertMinutestoMilliseconds(sessionMinutes));
+  }, [sessionMinutes]);
+
+  useEffect(() => {
+    setBreakMilliseconds(convertMinutestoMilliseconds(breakMinutes));
+  }, [breakMinutes]);
+
+  useEffect(() => {
+    timer.on("tick", handleTick);
+
+    timer.on("done", handleDone);
+
+    return () => {
+      timer.removeAllListeners();
+    };
+  }, [timer, handleTick, handleDone]);
+
+  const { minutes, seconds } = convertMillisecondsToTime(
+    activeTimer === "session" ? sessionMilliseconds : breakMilliseconds
+  );
 
   return (
     <div className="App">
@@ -49,23 +145,23 @@ function App() {
       <div className="container-break-session">
         <div className="container-break">
           <div>Break Length</div>
-          <button onClick={handleClickLess}>-</button>
-          <div>{numberBreakLength}</div>
-          <button onClick={handleClickAdd}>+</button>
+          <button onClick={handleBreakLessClick}>-</button>
+          <div>{breakMinutes}</div>
+          <button onClick={handleBreakAddClick}>+</button>
         </div>
         <div className="container-session">
           <div>Session Length</div>
-          <button onClick={handleClickLessLength}>-</button>
-          <div>{numberSessionLength}</div>
-          <button onClick={handleClickAddLength}>+</button>
+          <button onClick={handleSessionLessClick}>-</button>
+          <div>{sessionMinutes}</div>
+          <button onClick={handleSessionAddClick}>+</button>
         </div>
       </div>
       <div className="session-screen">
-        <div>Session</div>
-        <div>{numberSessionLength}:00</div>
-      </div>
-      <div className="button-controls">
-        <button>play</button>
+        <div>{activeTimer}</div>
+        <p>
+          {minutes}:{seconds}
+        </p>
+        <button onClick={handlePlay}>play</button>
         <button>pause</button>
         <button>rewinde</button>
       </div>
