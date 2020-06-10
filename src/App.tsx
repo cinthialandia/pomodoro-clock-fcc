@@ -117,15 +117,17 @@ function App() {
   };
 
   const handleDone = useCallback(() => {
-    if (activeTimer === "Session") {
-      setActiveTimer("Break");
-      timer.start(breakMilliseconds);
-      setSessionMilliseconds(convertMinutestoMilliseconds(sessionMinutes));
-    } else {
-      setActiveTimer("Session");
-      timer.start(sessionMilliseconds);
-      setBreakMilliseconds(convertMinutestoMilliseconds(breakMinutes));
-    }
+    setTimeout(() => {
+      if (activeTimer === "Session") {
+        setActiveTimer("Break");
+        timer.start(breakMilliseconds);
+        setSessionMilliseconds(convertMinutestoMilliseconds(sessionMinutes));
+      } else {
+        setActiveTimer("Session");
+        timer.start(sessionMilliseconds);
+        setBreakMilliseconds(convertMinutestoMilliseconds(breakMinutes));
+      }
+    }, 1000);
   }, [
     activeTimer,
     breakMilliseconds,
