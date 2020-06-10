@@ -1,19 +1,27 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import Timer from "tiny-timer";
 import "./App.css";
 
 type TimerStates = "Session" | "Break";
 
 function App() {
-  const [breakMinutes, setBreakMinutes] = useState(5);
-  const [sessionMinutes, setSessionMinutes] = useState(25);
+  const [breakMinutes, setBreakMinutes] = useState(0.1);
+  const [sessionMinutes, setSessionMinutes] = useState(0.1);
   const [breakMilliseconds, setBreakMilliseconds] = useState(0);
   const [sessionMilliseconds, setSessionMilliseconds] = useState(0);
   const [activeTimer, setActiveTimer] = useState<TimerStates>("Session");
+  const audioRef = useRef<HTMLAudioElement>(null);
   const timer = useMemo(() => new Timer(), []);
 
   const convertMinutestoMilliseconds = (minutes: number) => {
-    return Math.floor(minutes * 60 * 1000);
+    // adding 1 second to "show the 00:00"
+    return Math.floor(minutes * 60 * 1000) + 1000;
   };
 
   const convertMillisecondsToTime = (ms: number) => {
@@ -31,7 +39,8 @@ function App() {
 
     const minutes = Math.floor(ms / timeAPI.MINUTES);
     ms %= timeAPI.MINUTES;
-    const seconds = Math.round(ms / timeAPI.SECONDS);
+    // substracting 1 to show the "00:00"
+    const seconds = Math.round(ms / timeAPI.SECONDS) - 1;
 
     console.log({ minutes, seconds });
 
@@ -108,6 +117,10 @@ function App() {
   };
 
   const handleRewind = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
     timer.stop();
     setActiveTimer("Session");
     setSessionMinutes(25);
@@ -117,17 +130,15 @@ function App() {
   };
 
   const handleDone = useCallback(() => {
-    setTimeout(() => {
-      if (activeTimer === "Session") {
-        setActiveTimer("Break");
-        timer.start(breakMilliseconds);
-        setSessionMilliseconds(convertMinutestoMilliseconds(sessionMinutes));
-      } else {
-        setActiveTimer("Session");
-        timer.start(sessionMilliseconds);
-        setBreakMilliseconds(convertMinutestoMilliseconds(breakMinutes));
-      }
-    }, 1000);
+    if (activeTimer === "Session") {
+      setActiveTimer("Break");
+      timer.start(breakMilliseconds);
+      setSessionMilliseconds(convertMinutestoMilliseconds(sessionMinutes));
+    } else {
+      setActiveTimer("Session");
+      timer.start(sessionMilliseconds);
+      setBreakMilliseconds(convertMinutestoMilliseconds(breakMinutes));
+    }
   }, [
     activeTimer,
     breakMilliseconds,
@@ -139,6 +150,10 @@ function App() {
 
   const handleTick = useCallback(
     (ms: number) => {
+      if (ms > 0 && ms < 1000) {
+        audioRef.current?.play();
+      }
+
       if (activeTimer === "Session") {
         setSessionMilliseconds(ms);
       } else {
@@ -195,6 +210,7 @@ function App() {
         <button onClick={handlePlay}>play</button>
         <button onClick={handlePause}>pause</button>
         <button onClick={handleRewind}>rewinde</button>
+        <audio ref={audioRef} id="beep" src="/sound/beep.wav"></audio>
       </div>
     </div>
   );
