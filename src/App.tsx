@@ -3,8 +3,8 @@ import Timer from "tiny-timer";
 import "./App.css";
 
 function App() {
-  const [breakMinutes, setBreakMinutes] = useState(0.1);
-  const [sessionMinutes, setSessionMinutes] = useState(0.2);
+  const [breakMinutes, setBreakMinutes] = useState(5);
+  const [sessionMinutes, setSessionMinutes] = useState(25);
   const [breakMilliseconds, setBreakMilliseconds] = useState(0);
   const [sessionMilliseconds, setSessionMilliseconds] = useState(0);
   const [activeTimer, setActiveTimer] = useState<"session" | "break">(
@@ -29,19 +29,22 @@ function App() {
       };
     }
 
-    const minutes = Math.round(ms / timeAPI.MINUTES);
+    const minutes = Math.floor(ms / timeAPI.MINUTES);
     ms %= timeAPI.MINUTES;
     const seconds = Math.round(ms / timeAPI.SECONDS);
 
     console.log({ minutes, seconds });
 
     return {
-      minutes: minutes.toString(),
-      seconds: seconds.toString(),
+      minutes: minutes.toString().padStart(2, "0"),
+      seconds: seconds.toString().padStart(2, "0"),
     };
   };
 
   const handleBreakLessClick = (e: any) => {
+    if (timer.status === "running") {
+      return;
+    }
     let updateNumberBreak = breakMinutes;
 
     if (breakMinutes > 1) {
@@ -52,6 +55,9 @@ function App() {
   };
 
   const handleBreakAddClick = (e: any) => {
+    if (timer.status === "running") {
+      return;
+    }
     let updateNumber = breakMinutes;
 
     if (breakMinutes < 60) {
@@ -62,6 +68,9 @@ function App() {
   };
 
   const handleSessionLessClick = (e: any) => {
+    if (timer.status === "running") {
+      return;
+    }
     let updateNumberSession = sessionMinutes;
 
     if (updateNumberSession > 1) {
@@ -71,6 +80,9 @@ function App() {
   };
 
   const handleSessionAddClick = (e: any) => {
+    if (timer.status === "running") {
+      return;
+    }
     let updateNumberSession = sessionMinutes;
 
     if (updateNumberSession < 60) {
@@ -81,10 +93,27 @@ function App() {
   };
 
   const handlePlay = () => {
+    if (timer.status === "paused") {
+      timer.resume();
+      return;
+    }
     const timeInMilli =
       activeTimer === "session" ? sessionMilliseconds : breakMilliseconds;
 
     timer.start(timeInMilli);
+  };
+
+  const handlePause = () => {
+    timer.pause();
+  };
+
+  const handleRewind = () => {
+    timer.stop();
+    setActiveTimer("session");
+    setSessionMinutes(25);
+    setBreakMinutes(5);
+    setBreakMilliseconds(convertMinutestoMilliseconds(5));
+    setSessionMilliseconds(convertMinutestoMilliseconds(25));
   };
 
   const handleDone = useCallback(() => {
@@ -162,8 +191,8 @@ function App() {
           {minutes}:{seconds}
         </p>
         <button onClick={handlePlay}>play</button>
-        <button>pause</button>
-        <button>rewinde</button>
+        <button onClick={handlePause}>pause</button>
+        <button onClick={handleRewind}>rewinde</button>
       </div>
     </div>
   );
