@@ -2,14 +2,14 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Timer from "tiny-timer";
 import "./App.css";
 
+type TimerStates = "Session" | "Break";
+
 function App() {
   const [breakMinutes, setBreakMinutes] = useState(5);
   const [sessionMinutes, setSessionMinutes] = useState(25);
   const [breakMilliseconds, setBreakMilliseconds] = useState(0);
   const [sessionMilliseconds, setSessionMilliseconds] = useState(0);
-  const [activeTimer, setActiveTimer] = useState<"session" | "break">(
-    "session"
-  );
+  const [activeTimer, setActiveTimer] = useState<TimerStates>("Session");
   const timer = useMemo(() => new Timer(), []);
 
   const convertMinutestoMilliseconds = (minutes: number) => {
@@ -98,7 +98,7 @@ function App() {
       return;
     }
     const timeInMilli =
-      activeTimer === "session" ? sessionMilliseconds : breakMilliseconds;
+      activeTimer === "Session" ? sessionMilliseconds : breakMilliseconds;
 
     timer.start(timeInMilli);
   };
@@ -109,7 +109,7 @@ function App() {
 
   const handleRewind = () => {
     timer.stop();
-    setActiveTimer("session");
+    setActiveTimer("Session");
     setSessionMinutes(25);
     setBreakMinutes(5);
     setBreakMilliseconds(convertMinutestoMilliseconds(5));
@@ -117,12 +117,12 @@ function App() {
   };
 
   const handleDone = useCallback(() => {
-    if (activeTimer === "session") {
-      setActiveTimer("break");
+    if (activeTimer === "Session") {
+      setActiveTimer("Break");
       timer.start(breakMilliseconds);
       setSessionMilliseconds(convertMinutestoMilliseconds(sessionMinutes));
     } else {
-      setActiveTimer("session");
+      setActiveTimer("Session");
       timer.start(sessionMilliseconds);
       setBreakMilliseconds(convertMinutestoMilliseconds(breakMinutes));
     }
@@ -137,7 +137,7 @@ function App() {
 
   const handleTick = useCallback(
     (ms: number) => {
-      if (activeTimer === "session") {
+      if (activeTimer === "Session") {
         setSessionMilliseconds(ms);
       } else {
         setBreakMilliseconds(ms);
@@ -165,7 +165,7 @@ function App() {
   }, [timer, handleTick, handleDone]);
 
   const { minutes, seconds } = convertMillisecondsToTime(
-    activeTimer === "session" ? sessionMilliseconds : breakMilliseconds
+    activeTimer === "Session" ? sessionMilliseconds : breakMilliseconds
   );
 
   return (
