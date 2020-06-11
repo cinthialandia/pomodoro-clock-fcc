@@ -1,13 +1,17 @@
+@import url("https://fonts.googleapis.com/css2?family=Comfortaa:wght@600&family=Handlee&family=M+PLUS+Rounded+1c:wght@300;500&family=Merienda:wght@700&display=swap");
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: "Comfortaa", cursive;
+  font-family: "Handlee", cursive;
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  font-family: "Merienda", cursive;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #3b393e;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }

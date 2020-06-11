@@ -6,6 +6,14 @@ import React, {
   useRef,
 } from "react";
 import Timer from "tiny-timer";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faArrowDown,
+  faArrowUp,
+  faPlayCircle,
+  faPauseCircle,
+  faBackward,
+} from "@fortawesome/free-solid-svg-icons";
 import "./App.css";
 
 type TimerStates = "Session" | "Break";
@@ -213,47 +221,52 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Pomodoro Clock</h1>
+      <h1 className="title-pomodoro-clock">Pomodoro Clock</h1>
       <div className="container-break-session">
         <div className="container-break">
-          <div id="break-label">Break Length</div>
-          <button id="break-decrement" onClick={handleBreakLessClick}>
-            -
+          <div>Break</div>
+          <button className="button" onClick={handleBreakLessClick}>
+            <FontAwesomeIcon icon={faArrowDown} />
           </button>
-          <div id="break-length">{breakMinutes}</div>
-          <button id="break-increment" onClick={handleBreakAddClick}>
-            +
+          <div>{breakMinutes}</div>
+          <button className="button" onClick={handleBreakAddClick}>
+            <FontAwesomeIcon icon={faArrowUp} />
           </button>
         </div>
         <div className="container-session">
-          <div id="session-label">Session Length</div>
-          <button id="session-decrement" onClick={handleSessionLessClick}>
-            -
+          <div>Session</div>
+          <button className="button" onClick={handleSessionLessClick}>
+            <FontAwesomeIcon icon={faArrowDown} />
           </button>
-          <div id="session-length">{sessionMinutes}</div>
-          <button id="session-increment" onClick={handleSessionAddClick}>
-            +
+          <div>{sessionMinutes}</div>
+          <button className="button" onClick={handleSessionAddClick}>
+            <FontAwesomeIcon icon={faArrowUp} />
           </button>
         </div>
       </div>
       <div className="session-screen">
-        <div id="timer-label">{activeTimer}</div>
-        <p id="time-left">
-          {timeLeft.minutes}:{timeLeft.seconds}
-        </p>
-        {timer.status === "running" ? (
-          <button id="start_stop" onClick={handlePause}>
-            pause
+        <div className="countdown-active">{activeTimer}</div>
+        <div className="container-countdown">
+          <div className="countdown">
+            <div className="countdown-minutes">{timeLeft.minutes}</div>:
+            <div className="countdown-seconds">{timeLeft.seconds}</div>
+          </div>
+        </div>
+        <div className="button-container">
+          {timer.status === "running" ? (
+            <button className="button-play" onClick={handlePause}>
+              <FontAwesomeIcon icon={faPauseCircle} />
+            </button>
+          ) : (
+            <button className="button-play" onClick={handlePlay}>
+              <FontAwesomeIcon icon={faPlayCircle} />
+            </button>
+          )}
+          <button className="button-play" onClick={handleRewind}>
+            <FontAwesomeIcon icon={faBackward} />
           </button>
-        ) : (
-          <button id="start_stop" onClick={handlePlay}>
-            play
-          </button>
-        )}
-        <button id="reset" onClick={handleRewind}>
-          rewinde
-        </button>
-        <audio ref={audioRef} id="beep" src="/sound/beep.wav"></audio>
+        </div>
+        <audio ref={audioRef} src="/sound/beep.wav"></audio>
       </div>
     </div>
   );

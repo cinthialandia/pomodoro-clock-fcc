@@ -1,38 +1,114 @@
-.App {
+.title-pomodoro-clock {
   text-align: center;
+  color: white;
+  font-size: 40px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.container-countdown {
+  margin: 0 auto;
+  min-height: 350px;
+  max-width: 350px;
+  background-image: url(https://upload.wikimedia.org/wikipedia/commons/5/5b/Rotten_Tomatoes.svg);
+  background-repeat: no-repeat;
+  background-size: contain;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  padding-top: 30px;
+}
+
+.countdown {
   color: white;
+  font-size: 55px;
+  display: flex;
 }
 
-.App-link {
-  color: #61dafb;
+.countdown-minutes {
+  background-color: #a0201e;
+  border-radius: 10px;
+  padding: 5px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.countdown-seconds {
+  background-color: #a0201e;
+  border-radius: 10px;
+  padding: 5px;
+}
+
+.container-break-session {
+  display: flex;
+  justify-content: center;
+}
+
+.container-break {
+  color: white;
+  display: flex;
+  padding-right: 30px;
+}
+
+.container-session {
+  color: white;
+  display: flex;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+}
+
+.button {
+  color: #a0201e;
+  font-size: 15px;
+  background-color: #3b393e;
+  border: none;
+}
+
+.button-play {
+  color: white;
+  font-size: 40px;
+  background-color: #3b393e;
+  border: none;
+}
+
+.countdown-active {
+  text-align: center;
+  margin: 15px 0;
+  color: white;
+  font-size: 30px;
+}
+
+button:focus {
+  outline: none;
+}
+
+/* This query was necessary for changing the size of the elements on mobile cellphone*/
+@media only screen and (max-width: 800px) {
+  /*welcome section media query*/
+
+  .container-countdown {
+    min-height: 250px;
+    max-width: 250px;
+    padding-top: 20px;
   }
-  to {
-    transform: rotate(360deg);
+
+  .title-pomodoro-clock {
+    font-size: 30px;
+  }
+
+  .countdown {
+    font-size: 35px;
+  }
+
+  .container-break {
+    padding-right: 20px;
+  }
+
+  .button-play {
+    font-size: 35px;
+  }
+
+  .countdown-active {
+    margin: 10px 0;
+    font-size: 25px;
   }
 }
